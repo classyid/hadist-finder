@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mesin Pencari Hadist</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            200: '#c7d2fe',
+                            300: '#a5b4fc',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#312e81',
+                        },
+                    },
+                    fontFamily: {
+                        'scheherazade': ['"Scheherazade New"', 'serif'],
+                        'poppins': ['Poppins', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        .arabic {
+            font-family: 'Scheherazade New', serif;
+            font-size: 1.8rem;
+            line-height: 2.5rem;
+            direction: rtl;
+        }
+        .loading {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(79, 70, 229, 0.3);
+            border-radius: 50%;
+            border-top-color: #4f46e5;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .result-card {
+            transition: all 0.3s ease;
+        }
+        .result-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        .book-card {
+            transition: all 0.3s ease;
+        }
+        .book-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="font-poppins bg-gray-50 text-gray-800">
+    <!-- Header -->
+    <header class="bg-primary-700 text-white shadow-md">
+        <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center mb-4 md:mb-0">
+                <i class="fas fa-book text-3xl mr-3"></i>
+                <h1 class="text-2xl font-bold">Mesin Pencari Hadist</h1>
+            </div>
+            <div class="flex space-x-4">
+                <a href="#" id="toggleTheme" class="hover:text-primary-200 transition-colors">
+                    <i class="fas fa-moon text-xl"></i>
+                </a>
+                <a href="#" id="home" class="hover:text-primary-200 transition-colors">
+                    <i class="fas fa-home text-xl"></i>
+                </a>
+                <a href="#" id="info" class="hover:text-primary-200 transition-colors">
+                    <i class="fas fa-info-circle text-xl"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Tabs -->
+        <div class="bg-white rounded-lg shadow-md p-4 mb-8">
+            <div class="flex flex-wrap border-b">
+                <button id="searchTab" class="tab-button px-4 py-2 border-b-2 border-primary-600 text-primary-600 font-medium">
+                    <i class="fas fa-search mr-2"></i>Cari Hadist
+                </button>
+                <button id="randomTab" class="tab-button px-4 py-2 border-b-2 border-transparent hover:text-primary-600 text-gray-500">
+                    <i class="fas fa-random mr-2"></i>Hadist Acak
+                </button>
+                <button id="booksTab" class="tab-button px-4 py-2 border-b-2 border-transparent hover:text-primary-600 text-gray-500">
+                    <i class="fas fa-book mr-2"></i>Periwayat
+                </button>
+            </div>
+        </div>
+
+        <!-- Search Section -->
+        <section id="searchSection" class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="max-w-3xl mx-auto">
+                <h2 class="text-2xl font-semibold text-center text-primary-700 mb-6">
+                    <i class="fas fa-search mr-2"></i>Cari Hadist
+                </h2>
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-grow">
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            placeholder="Masukkan kata kunci pencarian..."
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        >
+                    </div>
+                    <button 
+                        id="searchButton"
+                        class="bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center"
+                    >
+                        <i class="fas fa-search mr-2"></i>
+                        Cari
+                    </button>
+                </div>
+                <div class="text-sm text-gray-500 mt-3">
+                    <p>Contoh: "nikah", "puasa", "sholat", dll.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Random Hadist Section -->
+        <section id="randomSection" class="bg-white rounded-lg shadow-md p-6 mb-8 hidden">
+            <div class="max-w-3xl mx-auto">
+                <h2 class="text-2xl font-semibold text-center text-primary-700 mb-6">
+                    <i class="fas fa-random mr-2"></i>Hadist Acak
+                </h2>
+                <div class="flex flex-col gap-4">
+                    <div class="flex items-center">
+                        <label class="mr-3 text-gray-700">Jumlah Hadist:</label>
+                        <select id="randomCount" class="px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="1">1</option>
+                            <option value="3">3</option>
+                            <option value="5">5</option>
+                            <option value="10">10</option>
+                        </select>
+                    </div>
+                    <button 
+                        id="randomButton"
+                        class="bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center"
+                    >
+                        <i class="fas fa-dice mr-2"></i>
+                        Tampilkan Hadist Acak
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Books Section -->
+        <section id="booksSection" class="bg-white rounded-lg shadow-md p-6 mb-8 hidden">
+            <h2 class="text-2xl font-semibold text-center text-primary-700 mb-6">
+                <i class="fas fa-book mr-2"></i>Daftar Periwayat Hadist
+            </h2>
+            <div id="booksList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Books will be populated here -->
+            </div>
+        </section>
+
+        <!-- Book Detail Section -->
+        <section id="bookDetailSection" class="bg-white rounded-lg shadow-md p-6 mb-8 hidden">
+            <div class="flex items-center mb-6">
+                <button id="backToBooks" class="mr-4 text-primary-600 hover:text-primary-800">
+                    <i class="fas fa-arrow-left text-xl"></i>
+                </button>
+                <h2 id="bookDetailTitle" class="text-2xl font-semibold text-primary-700">
+                    Detail Periwayat
+                </h2>
+            </div>
+            <div id="bookDetail" class="mb-6">
+                <!-- Book details go here -->
+            </div>
+            <div class="border-t pt-4">
+                <h3 class="text-xl font-semibold text-primary-700 mb-4">Hadist</h3>
+                <div class="flex flex-col md:flex-row gap-4 mb-6">
+                    <div class="flex-grow">
+                        <input 
+                            type="text" 
+                            id="rangeInput" 
+                            placeholder="Masukkan range (contoh: 1-10)"
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        >
+                    </div>
+                    <button 
+                        id="rangeButton"
+                        class="bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center"
+                    >
+                        <i class="fas fa-search mr-2"></i>
+                        Tampilkan
+                    </button>
+                </div>
+                <div id="bookHadithsList">
+                    <!-- Hadiths will be populated here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Recent Searches -->
+        <section id="recentSearches" class="bg-white rounded-lg shadow-md p-6 mb-8 hidden">
+            <h3 class="text-xl font-semibold text-primary-700 mb-4">
+                <i class="fas fa-history mr-2"></i>Pencarian Terakhir
+            </h3>
+            <div class="flex flex-wrap gap-2" id="recentSearchTags">
+                <!-- Tags will be added dynamically -->
+            </div>
+        </section>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="hidden flex justify-center items-center my-12">
+            <div class="loading"></div>
+            <p class="ml-4 text-lg text-primary-700">Memuat data...</p>
+        </div>
+
+        <!-- Search Results -->
+        <section id="resultsSection" class="hidden">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-semibold text-primary-700">
+                    <i class="fas fa-list-ul mr-2"></i>Hasil Pencarian
+                </h3>
+                <p id="resultCount" class="text-gray-600 text-sm"></p>
+            </div>
+            <div id="searchResults" class="space-y-6">
+                <!-- Results will be populated here -->
+            </div>
+        </section>
+
+        <!-- No Results -->
+        <section id="noResults" class="hidden bg-white rounded-lg shadow-md p-8 text-center">
+            <i class="far fa-sad-tear text-4xl text-gray-400 mb-3"></i>
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">Tidak Ada Hasil Ditemukan</h3>
+            <p class="text-gray-600">Coba gunakan kata kunci yang berbeda atau periksa ejaan Anda.</p>
+        </section>
+    </main>
+
+    <!-- Information Modal -->
+    <div id="infoModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 overflow-hidden">
+            <div class="bg-primary-700 text-white px-6 py-4 flex justify-between items-center">
+                <h3 class="text-xl font-semibold">Tentang Aplikasi</h3>
+                <button id="closeInfoModal" class="text-white hover:text-gray-200">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <div class="mb-4">
+                    <h4 class="font-semibold text-lg text-primary-700 mb-2">Mesin Pencari Hadist</h4>
+                    <p class="text-gray-700 mb-4">
+                        Aplikasi ini memungkinkan Anda untuk mencari hadist-hadist dari berbagai periwayat berdasarkan kata kunci.
+                        Hasil pencarian akan menampilkan hadist dalam Bahasa Arab dan terjemahan Bahasa Indonesia.
+                    </p>
+                    <p class="text-gray-700">
+                        Aplikasi ini menggunakan API Hadist yang menyediakan data lengkap dari berbagai periwayat hadist terpercaya.
+                    </p>
+                </div>
+                <div class="mb-4">
+                    <h4 class="font-semibold text-lg text-primary-700 mb-2">Cara Penggunaan</h4>
+                    <ol class="list-decimal list-inside text-gray-700 space-y-1">
+                        <li>Gunakan tab "Cari Hadist" untuk mencari hadist berdasarkan kata kunci</li>
+                        <li>Gunakan tab "Hadist Acak" untuk mendapatkan hadist secara acak</li>
+                        <li>Gunakan tab "Periwayat" untuk melihat daftar periwayat dan membaca hadist berdasarkan periwayat</li>
+                        <li>Klik pada hasil untuk melihat hadist lengkap dalam bahasa Arab dan Indonesia</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="bg-gray-100 px-6 py-4 flex justify-end">
+                <button id="closeInfoButton" class="bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded transition-colors">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-primary-800 text-white py-6">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="text-sm">&copy; 2025 Mesin Pencari Hadist | Dibuat oleh Classy Indonesia</p>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="#" class="text-white hover:text-primary-200 transition-colors">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="text-white hover:text-primary-200 transition-colors">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="text-white hover:text-primary-200 transition-colors">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // API Base URL
+        const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbzgEuPOgGy5A70jg_riSt3IVC8yHyO2qXpJKbbmXp4J3nPLwMxJFwnV1rWgK6X_yyPdGQ/exec';
+        
+        // DOM Elements
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+        const randomButton = document.getElementById('randomButton');
+        const randomCount = document.getElementById('randomCount');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const resultsSection = document.getElementById('resultsSection');
+        const searchResults = document.getElementById('searchResults');
+        const noResults = document.getElementById('noResults');
+        const resultCount = document.getElementById('resultCount');
+        const recentSearches = document.getElementById('recentSearches');
+        const recentSearchTags = document.getElementById('recentSearchTags');
+        const infoModal = document.getElementById('infoModal');
+        const infoButton = document.getElementById('info');
+        const closeInfoModal = document.getElementById('closeInfoModal');
+        const closeInfoButton = document.getElementById('closeInfoButton');
+        const toggleThemeButton = document.getElementById('toggleTheme');
+        
+        // Tabs
+        const searchTab = document.getElementById('searchTab');
+        const randomTab = document.getElementById('randomTab');
+        const booksTab = document.getElementById('booksTab');
+        const searchSection = document.getElementById('searchSection');
+        const randomSection = document.getElementById('randomSection');
+        const booksSection = document.getElementById('booksSection');
+        const bookDetailSection = document.getElementById('bookDetailSection');
+        const backToBooks = document.getElementById('backToBooks');
+        const booksList = document.getElementById('booksList');
+        const bookDetail = document.getElementById('bookDetail');
+        const bookDetailTitle = document.getElementById('bookDetailTitle');
+        const bookHadithsList = document.getElementById('bookHadithsList');
+        const rangeInput = document.getElementById('rangeInput');
+        const rangeButton = document.getElementById('rangeButton');
+        
+        // Current book ID
+        let currentBookId = '';
+        
+        // Theme Toggle
+        let darkMode = false;
+        toggleThemeButton.addEventListener('click', () => {
+            darkMode = !darkMode;
+            if (darkMode) {
+                document.body.classList.add('bg-gray-900', 'text-white');
+                document.body.classList.remove('bg-gray-50', 'text-gray-800');
+                toggleThemeButton.innerHTML = '<i class="fas fa-sun text-xl"></i>';
+                
+                // Change all white backgrounds to dark
+                document.querySelectorAll('.bg-white').forEach(el => {
+                    el.classList.remove('bg-white');
+                    el.classList.add('bg-gray-800');
+                });
+                
+                // Change text colors
+                document.querySelectorAll('.text-gray-700, .text-gray-600, .text-gray-500').forEach(el => {
+                    el.classList.add('text-gray-300');
+                    el.classList.remove('text-gray-700', 'text-gray-600', 'text-gray-500');
+                });
+            } else {
+                document.body.classList.remove('bg-gray-900', 'text-white');
+                document.body.classList.add('bg-gray-50', 'text-gray-800');
+                toggleThemeButton.innerHTML = '<i class="fas fa-moon text-xl"></i>';
+                
+                // Revert dark backgrounds to white
+                document.querySelectorAll('.bg-gray-800').forEach(el => {
+                    el.classList.add('bg-white');
+                    el.classList.remove('bg-gray-800');
+                });
+                
+                // Revert text colors
+                document.querySelectorAll('.text-gray-300').forEach(el => {
+                    el.classList.add('text-gray-600');
+                    el.classList.remove('text-gray-300');
+                });
+            }
+        });
+        
+        // Tab Toggle
+        searchTab.addEventListener('click', () => {
+            setActiveTab(searchTab);
+            searchSection.classList.remove('hidden');
+            randomSection.classList.add('hidden');
+            booksSection.classList.add('hidden');
+            bookDetailSection.classList.add('hidden');
+            resultsSection.classList.add('hidden');
+            noResults.classList.add('hidden');
+        });
+        
+        randomTab.addEventListener('click', () => {
+            setActiveTab(randomTab);
+            searchSection.classList.add('hidden');
+            randomSection.classList.remove('hidden');
+            booksSection.classList.add('hidden');
+            bookDetailSection.classList.add('hidden');
+            resultsSection.classList.add('hidden');
+            noResults.classList.add('hidden');
+        });
+        
+        booksTab.addEventListener('click', () => {
+            setActiveTab(booksTab);
+            searchSection.classList.add('hidden');
+            randomSection.classList.add('hidden');
+            booksSection.classList.remove('hidden');
+            bookDetailSection.classList.add('hidden');
+            resultsSection.classList.add('hidden');
+            noResults.classList.add('hidden');
+            
+            loadBooks();
+        });
+        
+        backToBooks.addEventListener('click', () => {
+            bookDetailSection.classList.add('hidden');
+            booksSection.classList.remove('hidden');
+        });
+        
+        function setActiveTab(activeTab) {
+            const tabs = [searchTab, randomTab, booksTab];
+            tabs.forEach(tab => {
+                if (tab === activeTab) {
+                    tab.classList.add('border-primary-600', 'text-primary-600');
+                    tab.classList.remove('border-transparent', 'text-gray-500', 'hover:text-primary-600');
+                } else {
+                    tab.classList.remove('border-primary-600', 'text-primary-600');
+                    tab.classList.add('border-transparent', 'text-gray-500', 'hover:text-primary-600');
+                }
+            });
+        }
+        
+        // Info Modal Toggle
+        infoButton.addEventListener('click', () => {
+            infoModal.classList.remove('hidden');
+        });
+        
+        closeInfoModal.addEventListener('click', () => {
+            infoModal.classList.add('hidden');
+        });
+        
+        closeInfoButton.addEventListener('click', () => {
+            infoModal.classList.add('hidden');
+        });
+        
+        // Click outside to close modal
+        infoModal.addEventListener('click', (e) => {
+            if (e.target === infoModal) {
+                infoModal.classList.add('hidden');
+            }
+        });
+        
+        // Search Function
+        async function searchHadith(keyword) {
+            try {
+                showLoading();
+                const response = await fetch(`${API_BASE_URL}?action=search&q=${encodeURIComponent(keyword)}`);
+                const data = await response.json();
+                hideLoading();
+                
+                if (!data.error && data.data && data.data.length > 0) {
+                    displaySearchResults(data, keyword);
+                    saveRecentSearch(keyword);
+                } else {
+                    showNoResults();
+                }
+            } catch (error) {
+                console.error('Error searching hadith:', error);
+                hideLoading();
+                alert('Terjadi kesalahan saat mencari. Silakan coba lagi.');
+            }
+        }
+        
+        // Random Hadith Function
+        async function getRandomHadith(count) {
+            try {
+                showLoading();
+                const response = await fetch(`${API_BASE_URL}?action=random&count=${count}`);
+                const data = await response.json();
+                hideLoading();
+                
+                if (!data.error && data.data && data.data.length > 0) {
+                    displayRandomResults(data);
+                } else {
+                    showNoResults();
+                }
+            } catch (error) {
+                console.error('Error getting random hadith:', error);
+                hideLoading();
+                alert('Terjadi kesalahan saat memuat hadist acak. Silakan coba lagi.');
+            }
+        }
+        
+        // Load Books Function
+        async function loadBooks() {
+            try {
+                showLoading();
+                const response = await fetch(`${API_BASE_URL}?action=books`);
+                const data = await response.json();
+                hideLoading();
+                
+                if (!data.error && data.data && data.data.length > 0) {
+                    displayBooks(data.data);
+                } else {
+                    booksList.innerHTML = '<p class="text-center text-gray-600">Tidak ada periwayat yang tersedia saat ini.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading books:', error);
+                hideLoading();
+                alert('Terjadi kesalahan saat memuat daftar periwayat. Silakan coba lagi.');
+            }
+        }
+        
+        // Load Hadith by Book Function
+        async function loadHadithByBook(bookId, range) {
+            try {
+                showLoading();
+                const response = await fetch(`${API_BASE_URL}?action=hadith&book=${bookId}&range=${range}`);
+                const data = await response.json();
+                hideLoading();
+                
+                if (!data.error && data.data && data.data.hadiths && data.data.hadiths.length > 0) {
+                    displayBookHadiths(data.data);
+                } else {
+                    bookHadithsList.innerHTML = '<p class="text-center text-gray-600">Tidak ada hadist yang tersedia untuk range ini.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading hadiths by book:', error);
+                hideLoading();
+                alert('Terjadi kesalahan saat memuat hadist. Silakan coba lagi.');
+            }
+        }
+        
+        // Display Search Results
+        function displaySearchResults(data, keyword) {
+            resultsSection.classList.remove('hidden');
+            noResults.classList.add('hidden');
+            searchResults.innerHTML = '';
+            
+            resultCount.textContent = `Ditemukan ${data.count} hasil untuk "${keyword}"`;
+            
+            data.data.forEach(hadith => {
+                const resultCard = document.createElement('div');
+                resultCard.className = 'bg-white rounded-lg shadow-md p-6 transition-all duration-300 result-card';
+                if (darkMode) {
+                    resultCard.classList.remove('bg-white');
+                    resultCard.classList.add('bg-gray-800');
+                }
+                
+                resultCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h4 class="font-semibold text-primary-700">
+                                ${hadith.riwayat} No. ${hadith.number}
+                            </h4>
+                            <p class="text-sm text-gray-600 ${darkMode ? 'text-gray-300' : ''}">
+                                ID: ${hadith.id}
+                            </p>
+                        </div>
+                        <div class="px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm">
+                            ${hadith.riwayat}
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <p class="arabic text-right">${hadith.arab}</p>
+                        <p class="text-gray-800 ${darkMode ? 'text-gray-100' : ''}">${hadith.indonesia}</p>
+                    </div>
+                `;
+                
+                searchResults.appendChild(resultCard);
+            });
+            
+            // Scroll to results
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Display Random Results
+        function displayRandomResults(data) {
+            resultsSection.classList.remove('hidden');
+            noResults.classList.add('hidden');
+            searchResults.innerHTML = '';
+            
+            resultCount.textContent = `${data.message}`;
+            
+            data.data.forEach(hadith => {
+                const resultCard = document.createElement('div');
+                resultCard.className = 'bg-white rounded-lg shadow-md p-6 transition-all duration-300 result-card';
+                if (darkMode) {
+                    resultCard.classList.remove('bg-white');
+                    resultCard.classList.add('bg-gray-800');
+                }
+                
+                resultCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h4 class="font-semibold text-primary-700">
+                                ${hadith.riwayat} No. ${hadith.number}
+                            </h4>
+                            <p class="text-sm text-gray-600 ${darkMode ? 'text-gray-300' : ''}">
+                                ID: ${hadith.id}
+                            </p>
+                        </div>
+                        <div class="px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm">
+                            ${hadith.riwayat}
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <p class="arabic text-right">${hadith.arab}</p>
+                        <p class="text-gray-800 ${darkMode ? 'text-gray-100' : ''}">${hadith.indonesia}</p>
+                    </div>
+                `;
+                
+                searchResults.appendChild(resultCard);
+            });
+            
+            // Scroll to results
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Display Books
+        function displayBooks(books) {
+            booksList.innerHTML = '';
+            
+            books.forEach(book => {
+                const bookCard = document.createElement('div');
+                bookCard.className = 'bg-white rounded-lg shadow-md p-6 transition-all duration-300 book-card';
+                if (darkMode) {
+                    bookCard.classList.remove('bg-white');
+                    bookCard.classList.add('bg-gray-800');
+                }
+                
+                bookCard.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-semibold text-primary-700 text-lg mb-2">
+                                ${book.name}
+                            </h4>
+                            <p class="text-sm text-gray-600 ${darkMode ? 'text-gray-300' : ''}">
+                                ID: ${book.id}
+                            </p>
+                        </div>
+                        <div class="px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm flex items-center">
+                            <i class="fas fa-book-open mr-1"></i> ${book.available}
+                        </div>
+                    </div>
+                    <button 
+                        class="mt-4 w-full bg-primary-500 hover:bg-primary-600 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center"
+                        data-book-id="${book.id}"
+                        data-book-name="${book.name}"
+                        data-book-available="${book.available}"
+                    >
+                        <i class="fas fa-eye mr-2"></i>
+                        Lihat Hadist
+                    </button>
+                `;
+                
+                bookCard.querySelector('button').addEventListener('click', function() {
+                    const bookId = this.getAttribute('data-book-id');
+                    const bookName = this.getAttribute('data-book-name');
+                    const bookAvailable = this.getAttribute('data-book-available');
+                    
+                    showBookDetail(bookId, bookName, bookAvailable);
+                });
+                
+                booksList.appendChild(bookCard);
+            });
+        }
+        
+        // Show Book Detail
+        function showBookDetail(bookId, bookName, bookAvailable) {
+            currentBookId = bookId;
+            
+            booksSection.classList.add('hidden');
+            bookDetailSection.classList.remove('hidden');
+            
+            bookDetailTitle.textContent = bookName;
+            
+            bookDetail.innerHTML = `
+                <div class="bg-primary-50 rounded-lg p-4 mb-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-semibold text-primary-700">ID Periwayat</h4>
+                            <p class="text-gray-700">${bookId}</p>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-primary-700">Jumlah Hadist</h4>
+                            <p class="text-gray-700">${bookAvailable}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-gray-700 mb-4">
+                    <p>Masukkan range nomor hadist yang ingin ditampilkan (contoh: 1-10). Maksimal 10 hadist per request.</p>
+                </div>
+            `;
+            
+            // Set default range
+            rangeInput.value = '1-10';
+            bookHadithsList.innerHTML = '';
+            
+            // Load default hadiths
+            loadHadithByBook(bookId, '1-10');
+        }
+        
+        // Display Book Hadiths
+        function displayBookHadiths(data) {
+            bookHadithsList.innerHTML = '';
+            
+            if (data.hadiths && data.hadiths.length > 0) {
+                const hadithsContainer = document.createElement('div');
+                hadithsContainer.className = 'space-y-6';
+                
+                data.hadiths.forEach(hadith => {
+                    const hadithCard = document.createElement('div');
+                    hadithCard.className = 'bg-white rounded-lg shadow-md p-6 transition-all duration-300 result-card';
+                    if (darkMode) {
+                        hadithCard.classList.remove('bg-white');
+                        hadithCard.classList.add('bg-gray-800');
+                    }
+                    
+                    hadithCard.innerHTML = `
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h4 class="font-semibold text-primary-700">
+                                    ${data.name} No. ${hadith.number}
+                                </h4>
+                            </div>
+                            <div class="px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm">
+                                Hadist #${hadith.number}
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <p class="arabic text-right">${hadith.arab}</p>
+                            <p class="text-gray-800 ${darkMode ? 'text-gray-100' : ''}">${hadith.indonesia}</p>
+                        </div>
+                    `;
+                    
+                    hadithsContainer.appendChild(hadithCard);
+                });
+                
+                bookHadithsList.appendChild(hadithsContainer);
+            } else {
+                bookHadithsList.innerHTML = '<p class="text-center text-gray-600">Tidak ada hadist yang tersedia.</p>';
+            }
+        }
+        
+        // Show Loading Indicator
+        function showLoading() {
+            loadingIndicator.classList.remove('hidden');
+        }
+        
+        // Hide Loading Indicator
+        function hideLoading() {
+            loadingIndicator.classList.add('hidden');
+        }
+        
+        // Show No Results
+        function showNoResults() {
+            noResults.classList.remove('hidden');
+            resultsSection.classList.add('hidden');
+        }
+        
+        // Recent Searches
+        function saveRecentSearch(keyword) {
+            let recentSearches = JSON.parse(localStorage.getItem('recentSearchesHadist') || '[]');
+            
+            // Avoid duplicates
+            if (!recentSearches.includes(keyword)) {
+                recentSearches.unshift(keyword);
+                recentSearches = recentSearches.slice(0, 5); // Keep only last 5 searches
+                localStorage.setItem('recentSearchesHadist', JSON.stringify(recentSearches));
+            }
+            
+            displayRecentSearches();
+        }
+        
+        function displayRecentSearches() {
+            const searches = JSON.parse(localStorage.getItem('recentSearchesHadist') || '[]');
+            
+            if (searches.length > 0) {
+                recentSearchTags.innerHTML = '';
+                searches.forEach(keyword => {
+                    const tag = document.createElement('button');
+                    tag.className = 'px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm hover:bg-primary-200 transition-colors';
+                    tag.textContent = keyword;
+                    tag.addEventListener('click', () => {
+                        searchInput.value = keyword;
+                        searchHadith(keyword);
+                    });
+                    recentSearchTags.appendChild(tag);
+                });
+                recentSearches.classList.remove('hidden');
+            } else {
+                recentSearches.classList.add('hidden');
+            }
+        }
+        
+        // Event Listeners
+        searchButton.addEventListener('click', () => {
+            const keyword = searchInput.value.trim();
+            if (keyword) {
+                searchHadith(keyword);
+            } else {
+                alert('Silakan masukkan kata kunci pencarian.');
+            }
+        });
+        
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const keyword = searchInput.value.trim();
+                if (keyword) {
+                    searchHadith(keyword);
+                } else {
+                    alert('Silakan masukkan kata kunci pencarian.');
+                }
+            }
+        });
+        
+        randomButton.addEventListener('click', () => {
+            const count = randomCount.value;
+            getRandomHadith(count);
+        });
+        
+        rangeButton.addEventListener('click', () => {
+            const range = rangeInput.value.trim();
+            if (range && /^\d+-\d+$/.test(range)) {
+                loadHadithByBook(currentBookId, range);
+            } else {
+                alert('Silakan masukkan range yang valid (contoh: 1-10).');
+            }
+        });
+        
+        // Home button resets to search tab
+        document.getElementById('home').addEventListener('click', () => {
+            setActiveTab(searchTab);
+            searchSection.classList.remove('hidden');
+            randomSection.classList.add('hidden');
+            booksSection.classList.add('hidden');
+            bookDetailSection.classList.add('hidden');
+            resultsSection.classList.add('hidden');
+            noResults.classList.add('hidden');
+        });
+        
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            displayRecentSearches();
+            // Load stats when page loads
+            fetch(`${API_BASE_URL}?action=stats`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('API Stats:', data);
+                })
+                .catch(error => {
+                    console.error('Error fetching stats:', error);
+                });
+        });
+    </script>
+</body>
+</html>
