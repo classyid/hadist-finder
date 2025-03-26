@@ -1,6 +1,6 @@
 # 🕌 Hadist Finder
 
-## Deskripsi Proyek
+!(https://blog.classy.id/upload/gambar_berita/8ed3bbdf30bdc9e6c3557db211b20b86_20250326103423.png)
 Hadist Finder adalah aplikasi web canggih untuk mencari, menelusuri, dan mengeksplorasi hadist dari berbagai periwayat. Aplikasi ini dikembangkan dengan antarmuka modern dan responsif, memudahkan pengguna dalam mencari referensi hadist.
 
 ## ✨ Fitur Utama
